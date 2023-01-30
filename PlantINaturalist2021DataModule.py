@@ -5,6 +5,10 @@ from torchvision import transforms
 import torchvision.transforms.functional as F
 from torchvision.datasets import ImageFolder
 
+TRANSFORM = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
 
 class SquarePad:
     def __call__(self, image):
@@ -31,7 +35,7 @@ class PlantINaturalist2021DataModule(pl.LightningDataModule):
     def setup(self, stage: str):
         if stage == "fit":
             self.inaturalist_train = ImageFolder(f"{self.data_dir}/PlantINaturalist2021(2021_train_mini)_250/train", transform=self.transform)
-            self.inaturalist_valid = ImageFolder(f"{self.data_dir}/PlantINaturalist2021(2021_train_mini)_250/validation", transform=self.transform)
+            self.inaturalist_valid = ImageFolder(f"{self.data_dir}/PlantINaturalist2021(2021_train_mini)_250/validation", transform=TRANSFORM)
 
     def train_dataloader(self):
         return DataLoader(self.inaturalist_train, batch_size = self.batch_size, num_workers = self.num_workers, pin_memory = self.pin_memory, shuffle=True)
