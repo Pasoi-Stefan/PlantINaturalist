@@ -1,4 +1,4 @@
-from torchmetrics.functional import accuracy
+from torchmetrics.functional import accuracy, precision, recall
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
@@ -51,7 +51,9 @@ class PlantINaturalist2021FinetuneMobileNetv2(pl.LightningModule):
         loss = F.cross_entropy(y_hat, y)
 
         acc = accuracy(y_hat, y, task="multiclass", num_classes=self.num_classes)
-        metrics = {"train_acc": acc, "train_loss": loss}
+        prec = precision(y_hat, y, task="multiclass", average = 'macro', num_classes=self.num_classes)
+        rec = recall(y_hat, y, task="multiclass", average = 'macro', num_classes=self.num_classes)
+        metrics = {"train_acc": acc, "train_precision": prec, "train_recall": rec, "train_loss": loss}
         self.log_dict(metrics, on_step=True, on_epoch=True, prog_bar = True)
         return loss
 
@@ -62,7 +64,9 @@ class PlantINaturalist2021FinetuneMobileNetv2(pl.LightningModule):
         loss = F.cross_entropy(y_hat, y)
 
         acc = accuracy(y_hat, y, task="multiclass", num_classes=self.num_classes)
-        metrics = {"val_acc": acc, "val_loss": loss}
+        prec = precision(y_hat, y, task="multiclass", average = 'macro', num_classes=self.num_classes)
+        rec = recall(y_hat, y, task="multiclass", average = 'macro', num_classes=self.num_classes)
+        metrics = {"val_acc": acc, "val_precision": prec, "val_recall": rec, "val_loss": loss}
         self.log_dict(metrics, on_step=True, on_epoch=True, prog_bar = True)
         return metrics
 
