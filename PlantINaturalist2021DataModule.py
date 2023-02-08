@@ -20,8 +20,9 @@ class SquarePad:
 
 
 class PlantINaturalist2021DataModule(pl.LightningDataModule):
-    def __init__(self, transform, batch_size = 32, num_workers = 0, pin_memory = False , data_dir = "./"):
+    def __init__(self, transform, context, batch_size = 32, num_workers = 0, pin_memory = False , data_dir = "./"):
         super().__init__()
+        self.context = context
         self.transform = transform
         self.batch_size = batch_size
         self.num_workers = num_workers
@@ -34,7 +35,12 @@ class PlantINaturalist2021DataModule(pl.LightningDataModule):
 
     def setup(self, stage: str):
         if stage == "fit":
-            self.inaturalist_train = ImageFolder(f"{self.data_dir}/PlantINaturalist2021(2021_train_mini)_250/train", transform=self.transform)
+            if self.context == "train":
+                self.inaturalist_train = ImageFolder(f"{self.data_dir}/PlantINaturalist2021(2021_train_mini)_250/train", transform=self.transform)
+            elif self.context == "finetune":
+                self.inaturalist_train = ImageFolder(f"{self.data_dir}/PlantINaturalist2021(2021_valid)_250", transform=self.transform)
+            elif self.context == "retrain":
+                self.inaturalist_train = ImageFolder(f"{self.data_dir}/PlantINaturalist2021(2021_valid)_250", transform=self.transform) + ImageFolder(f"{self.data_dir}/PlantINaturalist2021(2021_train_mini)_250/train", transform=self.transform)
             self.inaturalist_valid = ImageFolder(f"{self.data_dir}/PlantINaturalist2021(2021_train_mini)_250/validation", transform=TRANSFORM)
 
     def train_dataloader(self):
