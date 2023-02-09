@@ -4,29 +4,43 @@ import torch
 import torch.nn.functional as F
 import torch.nn as nn
 
-from torchvision.models.mobilenet import mobilenet_v2, MobileNet_V2_Weights
+from torchvision.models import efficientnet_v2_m, EfficientNet_V2_M_Weights
 
 
-class PlantINaturalist2021FinetuneMobileNetv2(pl.LightningModule):
+def get_all_children(module, depth=0):
+    if len(list(module.children())) == 0 or depth < 0:
+        return [module]
+
+    child_modules = list(module.children())
+    subchild_modules = []
+    for child_module in child_modules:
+        subchild_modules += get_all_children(child_module, depth - 1)
+
+    return subchild_modules
+
+class PlantINaturalist2021FinetuneEfficientNetv2_m(pl.LightningModule):
     def __init__(self, config):
         super().__init__()
         for hyperparamater, value in config.items():
             setattr(self, hyperparamater, value)
 
-        model = mobilenet_v2(weights=MobileNet_V2_Weights.IMAGENET1K_V2)
+        model = efficientnet_v2_m(weights=EfficientNet_V2_M_Weights.IMAGENET1K_V1)
         for param in model.parameters():
             param.requires_grad = False
 
-        trainable_layers = list(model.features.children())[-self.num_trainable_layers:]
-    
-        for layer in trainable_layers:
-            for param in layer.parameters():
-                param.requires_grad = True
+        if self.num_trainable_layers > 0:
+            trainable_layers = get_all_children(model, depth=1)[:-3][-self.num_trainable_layers:]
+        
+            for layer in trainable_layers:
+                for param in layer.parameters():
+                    param.requires_grad = True
 
-        # by default trainable
+
+        in_features = model.classifier[1].in_features
+
         model.classifier = nn.Sequential(
-            nn.Dropout(p=0.2),
-            nn.Linear(model.last_channel, self.num_classes),
+            nn.Dropout(p=0.3, inplace=True),
+            nn.Linear(in_features, self.num_classes),
         )
 
         self.model = model
