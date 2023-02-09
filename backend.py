@@ -170,8 +170,8 @@ def load_model(path_to_model):
 
 def encode_b64_image(image, format="jpeg"):
     """Encode a PIL image as a base64 string."""
-    buffer = io.BytesIO() 
-    image.save(buffer, format=format) 
+    buffer = io.BytesIO()  # bytes that live in memory
+    image.save(buffer, format=format)  # but which we write to like a file
     encoded_image = base64.b64encode(buffer.getvalue()).decode("utf8")
     return encoded_image
 
@@ -185,6 +185,7 @@ def decode_b64_image(image, format="jpeg"):
 
 def top_3_predictions(image):
     image = decode_b64_image (image)
+
     model = load_model("scripted_model.pt")
     image = transform(image)
     image = image.unsqueeze(0)
@@ -192,11 +193,12 @@ def top_3_predictions(image):
     values, indices = torch.topk(predictions, 3)
     values = [x.item() for x in values.squeeze()]
     indices = [ALL_CLASSES[int(x.item())] for x in indices.squeeze()]
+
     # return list(zip(indices,values))
     pred_list = list(zip(indices,values))
     output = ""
     for i in pred_list:
-        output  = output + i[0] + ":\t" + str(i[1]) + ",\n"
+        output  = output + i[0] + ":\t" + str(i[1])[:6] + ",\n"
     return output[:-2]
 
 
@@ -245,6 +247,7 @@ def hello():
 @app.route("/", methods = ["POST"])
 def model_logic():
     image = request.json["image"]
+
     return json.dumps({"output": top_3_predictions(image)})
 
 
