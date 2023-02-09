@@ -10,3 +10,17 @@ conda install torchinfo -c conda-forge
 conda install matplotlib -c conda-forge 
 conda install wandb -c conda-forge
 ```
+
+# Setup for backend 
+
+```
+pip install numpy
+pip install PyYAML
+pip install requests
+pip install pyngrok
+pip install flask-ngrok
+
+```
+
+# Hugging face link for demo
+https://huggingface.co/spaces/Marian013/PPCTA-FRONTEND
