@@ -4,32 +4,32 @@ import torch
 import torch.nn.functional as F
 import torch.nn as nn
 
-from torchvision.models.mobilenet import mobilenet_v2, MobileNet_V2_Weights
 
-
-class PlantINaturalist2021FinetuneMobileNetv2(pl.LightningModule):
+class PlantINaturalist2021CustomCNN(pl.LightningModule):
     def __init__(self, config):
         super().__init__()
         for hyperparamater, value in config.items():
             setattr(self, hyperparamater, value)
 
-        model = mobilenet_v2(weights=MobileNet_V2_Weights.IMAGENET1K_V2)
-        for param in model.parameters():
-            param.requires_grad = False
-
-        trainable_layers = list(model.features.children())[-self.num_trainable_layers:]
-    
-        for layer in trainable_layers:
-            for param in layer.parameters():
-                param.requires_grad = True
-
-        # by default trainable
-        model.classifier = nn.Sequential(
-            nn.Dropout(p=0.2),
-            nn.Linear(model.last_channel, self.num_classes),
+        self.model = nn.Sequential(
+            nn.Conv2d(in_channels=3, out_channels=12, kernel_size=2, stride=(2, 2)),
+            nn.BatchNorm2d(num_features=12),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=12, out_channels=12, kernel_size=2, stride=(2, 2)),
+            nn.BatchNorm2d(num_features=12),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Dropout(0.5),
+            nn.Conv2d(in_channels=12, out_channels=48, kernel_size=2, padding='same'),
+            nn.BatchNorm2d(num_features=48),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=48, out_channels=48, kernel_size=2, padding='same'),
+            nn.BatchNorm2d(num_features=48),
+            nn.ReLU(),
+            nn.AdaptiveMaxPool2d(output_size=(1, 1)),
+            nn.Flatten(),
+            nn.Linear(48, self.num_classes)
         )
-
-        self.model = model
 
 
     def training_step(self, batch, batch_idx):

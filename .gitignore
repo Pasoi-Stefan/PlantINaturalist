@@ -1,0 +1,5 @@
+**/*.jpg
+__pycache__
+lightning_logs
+wandb
+model.pth
