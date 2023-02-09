@@ -185,8 +185,6 @@ def decode_b64_image(image, format="jpeg"):
 
 def top_3_predictions(image):
     image = decode_b64_image (image)
-    return "Incercare de output"
-
     model = load_model("scripted_model.pt")
     image = transform(image)
     image = image.unsqueeze(0)
@@ -198,8 +196,8 @@ def top_3_predictions(image):
     pred_list = list(zip(indices,values))
     output = ""
     for i in pred_list:
-        output  = output + str(i[0]) + ": " + i[1] + ",\n"
-    return str(output)
+        output  = output + i[0] + ":\t" + str(i[1]) + ",\n"
+    return output[:-2]
 
 
 def tojson (image):
@@ -247,7 +245,6 @@ def hello():
 @app.route("/", methods = ["POST"])
 def model_logic():
     image = request.json["image"]
-    print (image)
     return json.dumps({"output": top_3_predictions(image)})
 
 
