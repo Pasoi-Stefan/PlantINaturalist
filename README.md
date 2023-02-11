@@ -27,3 +27,6 @@ https://huggingface.co/spaces/Marian013/PPCTA-FRONTEND
 
 # WandB project
 https://wandb.ai/pasoi0stefan/PlantINaturalist2
+
+# Presentation
+https://prezi.com/p/ilmqlorbnjrg/
